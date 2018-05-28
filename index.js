@@ -77,6 +77,7 @@ getOptions()
   .catch(err => ll.push.error(err, true))
   .then(opts => {
     if (opts === null) return null;
+    ll.push.complete('Push completed');
     ll.publish = 'npm publish';
     return execa.shell('npm publish').then(() => opts);
   })
