@@ -46,6 +46,7 @@ getOptions()
   .catch(err => ll.version.error(err, true))
   .then(opts => {
     ll.version.complete('Versioned');
+    if (argv.offile || argv['dry-run']) return null;
     return execa.shell('npm pack --json --dry-run').then(({ stdout }) => {
       const data = JSON.parse(stdout)[0];
       if (argv.y || argv.yes) return opts;
@@ -70,7 +71,7 @@ getOptions()
     });
   })
   .then(opts => {
-    if (argv.offile || argv['dry-run']) return null;
+    if (opts === null) return null;
     ll.push = 'git push';
     return execa.shell('git push').then(() => opts);
   })
