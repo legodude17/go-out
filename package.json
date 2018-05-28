@@ -3,6 +3,9 @@
   "version": "0.1.4",
   "description": "An easier way to publish and push",
   "main": "index.js",
+  "bin": {
+    "out": "index.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/legodude17/go-out"
