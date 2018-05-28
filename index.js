@@ -83,7 +83,7 @@ getOptions()
     return execa.shell('npm publish').then(() => opts);
   })
   .catch(err => ll.publish.error(err, true))
-  .then(() => ll.publish.complete('Published'))
+  .then(opts => (opts === null || ll.publish.complete('Published')))
   .then(() => new Promise(resolve => setTimeout(resolve, 1000)))
   .then(() => process.exit(0))
   .catch(() => process.exit(1));
