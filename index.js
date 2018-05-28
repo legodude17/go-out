@@ -22,15 +22,11 @@ function getOptions() {
       name: 'message',
       message: 'What commit message?'
     }
-  ].filter(Boolean)).then(answers => {
-    console.log(answers, opts);
-    return Object.assign({}, opts, answers);
-  });
+  ].filter(Boolean)).then(answers => Object.assign({}, opts, answers));
 }
 
 getOptions()
   .then(opts => {
-    console.log(opts);
     ll.add = 'git add .';
     ll.start();
     return execa.shell('git add .').then(() => opts);
@@ -68,6 +64,7 @@ getOptions()
           process.stdout.write('Aborted.\n');
           process.exit(2);
         }
+        ll.play();
         return opts;
       });
     });
