@@ -22,7 +22,10 @@ function getOptions() {
       name: 'message',
       message: 'What commit message?'
     }
-  ].filter(Boolean)).then(answers => Object.assign({}, answers, opts));
+  ].filter(Boolean)).then(answers => {
+    console.log(answers, opts);
+    return Object.assign({}, answers, opts);
+  });
 }
 
 getOptions()
