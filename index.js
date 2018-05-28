@@ -27,6 +27,7 @@ function getOptions() {
 
 getOptions()
   .then(opts => {
+    console.log(opts);
     ll.add = 'git add .';
     ll.start();
     return execa.shell('git add .').then(() => opts);
