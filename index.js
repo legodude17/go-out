@@ -24,7 +24,7 @@ function getOptions() {
     }
   ].filter(Boolean)).then(answers => {
     console.log(answers, opts);
-    return Object.assign({}, answers, opts);
+    return Object.assign({}, opts, answers);
   });
 }
 
@@ -39,7 +39,7 @@ getOptions()
   .then(opts => {
     ll.add.complete('Added');
     ll.commit = 'git commit';
-    return execa.shell(`git commit -m ${opts.message}`).then(() => opts);
+    return execa.shell(`git commit -m "${opts.message}"`).then(() => opts);
   })
   .catch(err => ll.commit.error(err, true))
   .then(opts => {
