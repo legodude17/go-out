@@ -39,13 +39,13 @@ getOptions()
   })
   .catch(err => ll.commit.error(err, true))
   .then(opts => {
-    ll.commit.complete('Committed');
+    ll.commit.complete(`Committed with message ${opts.message}`);
     ll.version = 'npm version';
-    return execa.shell(`npm version ${opts.version}`).then(() => opts);
+    return execa.shell(`npm version ${opts.version}`).then(({ stdout }) => [opts, stdout]);
   })
   .catch(err => ll.version.error(err, true))
-  .then(opts => {
-    ll.version.complete('Versioned');
+  .then(([opts, stdout]) => {
+    ll.version.complete(`New version: ${stdout}`);
     if (argv.offile || argv['dry-run']) return null;
     return execa.shell('npm pack --json --dry-run').then(({ stdout }) => {
       const data = JSON.parse(stdout)[0];
