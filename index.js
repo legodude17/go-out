@@ -65,6 +65,7 @@ getOptions()
           process.stdout.write('Aborted.\n');
           process.exit(2);
         }
+        ll.tasks.splice(0, 4);
         ll.play();
         return opts;
       });
