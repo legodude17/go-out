@@ -46,7 +46,7 @@ getOptions()
   .catch(err => ll.version.error(err, true))
   .then(([opts, stdout]) => {
     ll.version.complete(`New version: ${stdout}`);
-    if (argv.offile || argv['dry-run']) return null;
+    if (argv.offline || argv['dry-run']) return null;
     return execa.shell('npm pack --json --dry-run').then(({ stdout }) => {
       const data = JSON.parse(stdout)[0];
       if (argv.y || argv.yes) return opts;
