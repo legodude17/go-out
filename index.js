@@ -35,11 +35,11 @@ getOptions()
   .then(opts => {
     ll.add.complete('Added');
     ll.commit = 'git commit';
-    return execa.shell(`git commit -m "${opts.message}"`).then(() => opts);
+    return execa.shell(`git commit -m "${opts.message}"`).then(({ stdout }) => [opts, stdout]);
   })
   .catch(err => ll.commit.error(err, true))
-  .then(opts => {
-    ll.commit.complete(`Committed with message ${opts.message}`);
+  .then(([opts, stdout]) => {
+    ll.commit.complete(`Committed: ${stdout.split('\n')[0]}`);
     ll.version = 'npm version';
     return execa.shell(`npm version ${opts.version}`).then(({ stdout }) => [opts, stdout]);
   })
