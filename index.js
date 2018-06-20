@@ -5,18 +5,22 @@ const execa = require('execa');
 const ll = require('listr-log');
 const argv = require('minimist')(process.argv.slice(2));
 
+if (argv.npm === undefined) {
+  argv.npm = true;
+}
+
 function getOptions() {
   const opts = {
     version: argv._[0],
     message: argv._[1] || argv.m
   };
   return inquirer.prompt([
-    opts.version || {
+    argv.npm && (opts.version || {
       type: 'list',
       name: 'version',
       message: 'What version bump?',
       choices: ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease']
-    },
+    }),
     opts.message || {
       type: 'input',
       name: 'message',
@@ -40,13 +44,15 @@ getOptions()
   .catch(err => ll.commit.error(err, true))
   .then(([opts, stdout]) => {
     ll.commit.complete(`Committed: ${stdout.split('\n')[0]}`);
+    if (!argv.npm) return [opts];
     ll.version = 'npm version';
     return execa.shell(`npm version ${opts.version}`).then(({ stdout }) => [opts, stdout]);
   })
   .catch(err => ll.version.error(err, true))
   .then(([opts, stdout]) => {
-    ll.version.complete(`New version: ${stdout}`);
+    if (argv.npm) ll.version.complete(`New version: ${stdout}`);
     if (argv.offline || argv['dry-run']) return null;
+    if (!argv.npm) return opts;
     return execa.shell('npm pack --json --dry-run').then(({ stdout }) => {
       const data = JSON.parse(stdout)[0];
       if (argv.y || argv.yes) return opts;
@@ -80,6 +86,7 @@ getOptions()
   .then(opts => {
     if (opts === null) return null;
     ll.push.complete('Push completed');
+    if (!argv.npm) return null;
     ll.publish = 'npm publish';
     return execa.shell('npm publish').then(() => opts);
   })
