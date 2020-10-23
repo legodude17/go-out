@@ -33,32 +33,32 @@ getOptions()
   .then(opts => {
     ll.add = 'git add .';
     ll.start();
-    return execa.shell('git add .').then(() => opts);
+    return execa('git', ['add', '.']).then(() => opts);
   })
   .catch(err => ll.add.error(err, true))
   .then(opts => {
     ll.add.complete('Added');
     ll.commit = 'git commit';
-    return execa.shell(`git commit -m "${opts.message}"`).then(({ stdout }) => [opts, stdout]);
+    return execa('git', ['commit', '-m', opts.message]).then(({ stdout }) => [opts, stdout]);
   })
   .catch(err => ll.commit.error(err, true))
   .then(([opts, stdout]) => {
     ll.commit.complete(`Committed: ${stdout.split('\n')[0]}`);
     if (!argv.npm) return [opts];
     ll.version = 'npm version';
-    return execa.shell(`npm version ${opts.version}`).then(({ stdout }) => [opts, stdout]);
+    return execa('npm', ['version', opts.version]).then(({ stdout }) => [opts, stdout]);
   })
   .catch(err => ll.version.error(err, true))
   .then(([opts, stdout]) => {
     if (argv.npm) ll.version.complete(`New version: ${stdout}`);
     if (argv.offline || argv['dry-run']) return null;
     if (!argv.npm) return opts;
-    return execa.shell('npm pack --json --dry-run').then(({ stdout }) => {
+    return execa('npm', ['pack', '--json', '--dry-run']).then(({ stdout }) => {
       const data = JSON.parse(stdout)[0];
       if (argv.y || argv.yes) return opts;
       ll.pause();
       process.stdout.write('Files to be included:\n');
-      process.stdout.write(data.files.map(file => file.path).join('\n'));
+      process.stdout.write(data.files.map(file => '  ' + file.path).join('\n'));
       process.stdout.write('\n');
       return inquirer.prompt([
         {
@@ -80,7 +80,7 @@ getOptions()
   .then(opts => {
     if (opts === null) return null;
     ll.push = 'git push';
-    return execa.shell('git push').then(() => opts);
+    return execa('git', ['push']).then(() => opts);
   })
   .catch(err => ll.push.error(err, true))
   .then(opts => {
@@ -88,7 +88,7 @@ getOptions()
     ll.push.complete('Push completed');
     if (!argv.npm) return null;
     ll.publish = 'npm publish';
-    return execa.shell('npm publish').then(() => opts);
+    return execa('npm', ['publish']).then(() => opts);
   })
   .catch(err => ll.publish.error(err, true))
   .then(opts => (opts === null || ll.publish.complete('Published')))
