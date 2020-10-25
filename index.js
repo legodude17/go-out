@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-const inquirer = require('inquirer');
+const enquirer = require('enquirer');
 const execa = require('execa');
 const ll = require('listr-log');
 const argv = require('minimist')(process.argv.slice(2));
@@ -15,9 +15,9 @@ function getOptions() {
     version: argv._[0],
     message: argv._[1] || argv.m
   };
-  return inquirer.prompt([
+  return enquirer.prompt([
     argv.npm && (opts.version || {
-      type: 'list',
+      type: 'select',
       name: 'version',
       message: 'What version bump?',
       choices: ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease']
@@ -57,17 +57,14 @@ getOptions()
     return packlist().then((files) => {
       if (argv.y || argv.yes) return opts;
       ll.pause();
-      console.log(files);
       process.stdout.write('Files to be included:\n');
-      process.stdout.write(files.map(file => `  ${file.path}`).join('\n'));
+      process.stdout.write(files.map(file => `  ${file}`).join('\n'));
       process.stdout.write('\n');
-      return inquirer.prompt([
-        {
-          name: 'yes',
-          type: 'confirm',
-          message: 'Files above are to be included. Proceed?'
-        }
-      ]).then(hash => {
+      return enquirer.prompt({
+        name: 'yes',
+        type: 'confirm',
+        message: 'Files above are to be included. Proceed?'
+      }).then(hash => {
         if (!hash.yes) {
           process.stdout.write('Aborted.\n');
           process.exit(2);
