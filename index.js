@@ -63,7 +63,8 @@ getOptions()
       return enquirer.prompt({
         name: 'yes',
         type: 'confirm',
-        message: 'Files above are to be included. Proceed?'
+        message: 'Files above are to be included. Proceed?',
+        initial: true
       }).then(hash => {
         if (!hash.yes) {
           process.stdout.write('Aborted.\n');

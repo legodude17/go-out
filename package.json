@@ -6,6 +6,9 @@
   "bin": {
     "out": "index.js"
   },
+  "files": [
+    "readme.md"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/legodude17/go-out"
