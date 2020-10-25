@@ -33,7 +33,7 @@ function getOptions() {
 getOptions()
   .then(opts => {
     ll.add = 'git add .';
-    // ll.start();
+    ll.start();
     return execa('git', ['add', '.']).then(() => opts);
   })
   .catch(err => ll.add.error(err, true))
