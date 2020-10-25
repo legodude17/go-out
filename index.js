@@ -57,6 +57,7 @@ getOptions()
     return packlist().then((files) => {
       if (argv.y || argv.yes) return opts;
       ll.pause();
+      console.log(files);
       process.stdout.write('Files to be included:\n');
       process.stdout.write(files.map(file => `  ${file.path}`).join('\n'));
       process.stdout.write('\n');
