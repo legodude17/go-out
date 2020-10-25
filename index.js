@@ -54,11 +54,12 @@ getOptions()
     if (argv.offline || argv['dry-run']) return null;
     if (!argv.npm) return opts;
     return execa('npm', ['pack', '--json', '--dry-run']).then(({ stdout }) => {
+      console.log(stdout);
       const data = JSON.parse(stdout)[0];
       if (argv.y || argv.yes) return opts;
       ll.pause();
       process.stdout.write('Files to be included:\n');
-      process.stdout.write(data.files.map(file => '  ' + file.path).join('\n'));
+      process.stdout.write(data.files.map(file => `  ${file.path}`).join('\n'));
       process.stdout.write('\n');
       return inquirer.prompt([
         {
