@@ -4,6 +4,7 @@ const inquirer = require('inquirer');
 const execa = require('execa');
 const ll = require('listr-log');
 const argv = require('minimist')(process.argv.slice(2));
+const packlist = require('npm-packlist');
 
 if (argv.npm === undefined) {
   argv.npm = true;
@@ -53,13 +54,11 @@ getOptions()
     if (argv.npm) ll.version.complete(`New version: ${stdout}`);
     if (argv.offline || argv['dry-run']) return null;
     if (!argv.npm) return opts;
-    return execa('npm', ['pack', '--json', '--dry-run']).then(({ stdout, stderr }) => {
-      console.log(stdout, stderr);
-      const data = JSON.parse(stdout)[0];
+    return packlist().then((files) => {
       if (argv.y || argv.yes) return opts;
       ll.pause();
       process.stdout.write('Files to be included:\n');
-      process.stdout.write(data.files.map(file => `  ${file.path}`).join('\n'));
+      process.stdout.write(files.map(file => `  ${file.path}`).join('\n'));
       process.stdout.write('\n');
       return inquirer.prompt([
         {
