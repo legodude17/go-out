@@ -1,96 +1,123 @@
-#! /usr/bin/env node
+import { execa, execaCommand } from "execa";
+import createApp from "noclis";
 
-const enquirer = require('enquirer');
-const execa = require('execa');
-const ll = require('listr-log');
-const argv = require('minimist')(process.argv.slice(2));
-const packlist = require('npm-packlist');
+const app = createApp(cli =>
+  cli
+    .option(opt =>
+      opt.name("git").desc("Use git?").type("boolean").default(true)
+    )
+    .option(opt =>
+      opt.name("npm").desc("Use npm?").type("boolean").default(true)
+    )
+    .option(opt =>
+      opt
+        .name("otp")
+        .desc("Command to get an otp for npm")
+        .type("string")
+        .cli(false)
+        .prompt({
+          type: "input",
+          message: "Enter a command that will get an otp"
+        })
+    )
+    .option(opt =>
+      opt
+        .name("preid")
+        .desc("Prerelease ID")
+        .type("string")
+        .prompt({
+          type: "select",
+          message: "What's the prerelease ID?",
+          choices: ["", "alpha", "beta", "pre"]
+        })
+    )
+    .argument(arg =>
+      arg
+        .name("version")
+        .desc("Version bump")
+        .type("string")
+        .choices([
+          "major",
+          "minor",
+          "patch",
+          "premajor",
+          "preminor",
+          "prepatch",
+          "prerelease"
+        ])
+        .required()
+        .prompt({
+          type: "select",
+          message: "What version bump?",
+          choices: [
+            "major",
+            "minor",
+            "patch",
+            "premajor",
+            "preminor",
+            "prepatch",
+            "prerelease"
+          ]
+        })
+    )
+    .argument(arg =>
+      arg
+        .name("message")
+        .desc("Commit message to use")
+        .type("string")
+        .required()
+        .prompt({
+          type: "input",
+          message: "What commit message?"
+        })
+    )
+);
 
-if (argv.npm === undefined) {
-  argv.npm = true;
-}
-
-function getOptions() {
-  const opts = {
-    version: argv._[0],
-    message: argv._[1] || argv.m
-  };
-  return enquirer.prompt([
-    argv.npm && (opts.version || {
-      type: 'select',
-      name: 'version',
-      message: 'What version bump?',
-      choices: ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease']
-    }),
-    opts.message || {
-      type: 'input',
-      name: 'message',
-      message: 'What commit message?'
-    }
-  ].filter(Boolean)).then(answers => Object.assign({}, opts, answers));
-}
-
-getOptions()
-  .then(opts => {
-    ll.add = 'git add .';
-    ll.start();
-    return execa('git', ['add', '.']).then(() => opts);
-  })
-  .catch(err => ll.add.error(err, true))
-  .then(opts => {
-    ll.add.complete('Added');
-    ll.commit = 'git commit';
-    return execa('git', ['commit', '-m', opts.message]).then(({ stdout }) => [opts, stdout]);
-  })
-  .catch(err => ll.commit.error(err, true))
-  .then(([opts, stdout]) => {
-    ll.commit.complete(`Committed: ${stdout.split('\n')[0]}`);
-    if (!argv.npm) return [opts];
-    ll.version = 'npm version';
-    return execa('npm', ['version', opts.version]).then(({ stdout }) => [opts, stdout]);
-  })
-  .catch(err => ll.version.error(err, true))
-  .then(([opts, stdout]) => {
-    if (argv.npm) ll.version.complete(`New version: ${stdout}`);
-    if (argv.offline || argv['dry-run']) return null;
-    if (!argv.npm) return opts;
-    return packlist().then((files) => {
-      if (argv.y || argv.yes) return opts;
-      ll.pause();
-      process.stdout.write('Files to be included:\n');
-      process.stdout.write(files.map(file => `  ${file}`).join('\n'));
-      process.stdout.write('\n');
-      return enquirer.prompt({
-        name: 'yes',
-        type: 'confirm',
-        message: 'Files above are to be included. Proceed?',
-        initial: true
-      }).then(hash => {
-        if (!hash.yes) {
-          process.stdout.write('Aborted.\n');
-          process.exit(2);
+app.on("**", (args, opts) =>
+  [
+    opts.git && {
+      name: "git add .",
+      key: "add",
+      handler: () => execa("git", ["add", "."])
+    },
+    opts.git && {
+      name: "git commit",
+      key: "commit",
+      handler: () => execa("git", ["commit", "-m", args.message])
+    },
+    opts.npm && {
+      name: "npm version",
+      key: "version",
+      handler: () => execa("npm", ["version", args.version])
+    },
+    opts.git && {
+      name: "git push",
+      key: "push",
+      handler: () => execa("git", ["push"])
+    },
+    opts.npm && {
+      name: "npm publish",
+      key: "publish",
+      handler: async task => {
+        let otp = "";
+        if (opts.otp) {
+          const otpTask = task.task("Get OTP", "otp");
+          try {
+            const proc = await execaCommand(opts.otp);
+            otp = proc.stdout;
+          } catch (error) {
+            otpTask.error(error);
+          }
+          otpTask.complete("Got OTP");
         }
-        ll.tasks.splice(0, 4);
-        ll.play();
-        return opts;
-      });
-    });
-  })
-  .then(opts => {
-    if (opts === null) return null;
-    ll.push = 'git push';
-    return execa('git', ['push']).then(() => opts);
-  })
-  .catch(err => ll.push.error(err, true))
-  .then(opts => {
-    if (opts === null) return null;
-    ll.push.complete('Push completed');
-    if (!argv.npm) return null;
-    ll.publish = 'npm publish';
-    return execa('npm', ['publish']).then(() => opts);
-  })
-  .catch(err => ll.publish.error(err, true))
-  .then(opts => (opts === null || ll.publish.complete('Published')))
-  .then(() => new Promise(resolve => setTimeout(resolve, 1000)))
-  .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+
+        const args = ["publish"];
+        if (opts.preid) args.push("--preid", opts.preid);
+        if (otp) args.push("--otp", otp);
+        return execa("npm", args);
+      }
+    }
+  ].filter(Boolean)
+);
+
+export default app;

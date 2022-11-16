@@ -1,31 +1,25 @@
 {
-  "extends": "airbnb-base",
+  "extends": [
+    "plugin:n/recommended",
+    "plugin:unicorn/recommended",
+    "plugin:import/recommended",
+    "eslint:recommended",
+    "prettier"
+  ],
+  "env": {
+    "node": true,
+    "es2022": true
+  },
   "rules": {
-    "no-multi-assign": "off",
-    "no-shadow": "off",
-    "no-return-assign": 1,
-    "arrow-parens": "off",
-    "max-len": [
-      "warn",
-      {
-        "code": 120
-      }
-    ],
-    "comma-dangle": [
-      "error",
-      "never"
-    ],
-    "no-restricted-syntax": [
-      "error",
-      "WithStatement",
-      "BinaryExpression[operator='in']"
-    ],
-    "indent": [
-      "error",
-      2
-    ],
-    "no-param-reassign": "off",
-    "no-plusplus": "off",
-    "no-underscore-dangle": "off"
+    "unicorn/filename-case": "off",
+    "no-dupe-class-members": "off",
+    "unicorn/prevent-abbreviations": "off",
+    "n/no-missing-import": "off",
+    "no-unused-vars": "off",
+    "unicorn/import-style": "off"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
   }
 }

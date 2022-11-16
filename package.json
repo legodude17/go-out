@@ -4,10 +4,13 @@
   "description": "An easier way to publish and push",
   "main": "index.js",
   "bin": {
-    "out": "index.js"
+    "out": "bin.js"
   },
+  "type": "module",
   "files": [
-    "readme.md"
+    "readme.md",
+    "index.js",
+    "bin.js"
   ],
   "repository": {
     "type": "git",
@@ -21,15 +24,19 @@
   },
   "homepage": "https://github.com/legodude17/go-out#readme",
   "devDependencies": {
-    "eslint": "^4.19.1",
-    "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.12.0"
+    "eslint": "^8.26.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.3.0",
+    "eslint-plugin-unicorn": "^44.0.2",
+    "prettier": "^2.7.1"
   },
   "dependencies": {
-    "enquirer": "^2.3.6",
-    "execa": "^0.10.0",
-    "listr-log": "^0.3.1",
-    "minimist": "^1.2.5",
-    "npm-packlist": "^2.1.4"
+    "execa": "^6.1.0",
+    "noclis": "^0.3.1-beta.1"
+  },
+  "prettier": {
+    "trailingComma": "none",
+    "arrowParens": "avoid"
   }
 }
