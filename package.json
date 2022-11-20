@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/legodude17/go-out#readme",
   "devDependencies": {
-    "eslint": "^4.19.1",
+    "eslint": "^8.28.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.12.0"
   },
