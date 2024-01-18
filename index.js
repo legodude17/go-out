@@ -1,4 +1,5 @@
 import { execa, execaCommand } from "execa";
+// eslint-disable-next-line import/no-unresolved
 import createApp from "noclis";
 
 const app = createApp(cli =>
@@ -46,6 +47,7 @@ const app = createApp(cli =>
           "prerelease"
         ])
         .required()
+        .config(false)
         .prompt({
           type: "select",
           message: "What version bump?",
@@ -66,6 +68,7 @@ const app = createApp(cli =>
         .desc("Commit message to use")
         .type("string")
         .required()
+        .config(false)
         .prompt({
           type: "input",
           message: "What commit message?"
@@ -73,27 +76,35 @@ const app = createApp(cli =>
     )
 );
 
-app.on("**", (args, opts) =>
+function run(cmd, args) {
+  return execa(cmd, args);
+}
+
+app.on((args, opts) =>
   [
     opts.git && {
       name: "git add .",
       key: "add",
-      handler: () => execa("git", ["add", "."])
+      handler: run("git", ["add", "."])
     },
     opts.git && {
       name: "git commit",
       key: "commit",
-      handler: () => execa("git", ["commit", "-m", args.message])
+      handler: run("git", ["commit", "-m", args.message])
     },
     opts.npm && {
       name: "npm version",
       key: "version",
-      handler: () => execa("npm", ["version", args.version])
+      handler: run("npm", [
+        "version",
+        args.version,
+        ...(opts.preid ? ["--preid", opts.preid] : [])
+      ])
     },
     opts.git && {
       name: "git push",
       key: "push",
-      handler: () => execa("git", ["push"])
+      handler: run("git", ["push"])
     },
     opts.npm && {
       name: "npm publish",
@@ -103,18 +114,20 @@ app.on("**", (args, opts) =>
         if (opts.otp) {
           const otpTask = task.task("Get OTP", "otp");
           try {
+            otpTask.start();
             const proc = await execaCommand(opts.otp);
             otp = proc.stdout;
+            otpTask.complete(`Got OTP: ${otp}`);
           } catch (error) {
             otpTask.error(error);
           }
-          otpTask.complete("Got OTP");
         }
 
         const args = ["publish"];
-        if (opts.preid) args.push("--preid", opts.preid);
+        if (opts.preid) args.push("--tag", opts.preid);
         if (otp) args.push("--otp", otp);
-        return execa("npm", args);
+        console.log(args);
+        // return execa("npm", args);
       }
     }
   ].filter(Boolean)
