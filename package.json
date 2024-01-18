@@ -1,6 +1,6 @@
 {
   "name": "go-out",
-  "version": "3.0.0-alpha.0",
+  "version": "3.0.0-alpha.1",
   "description": "An easier way to publish and push",
   "main": "index.js",
   "bin": {
