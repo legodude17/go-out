@@ -14,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/legodude17/go-out"
+    "url": "git+https://github.com/legodude17/go-out.git"
   },
   "keywords": [],
   "author": "legodude17",
